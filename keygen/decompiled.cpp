@@ -5,38 +5,18 @@
 
 void ACFXGenCodeSecertBeautify(const char *code, _BYTE *secert)
 {
-	int v2 = 0;
-	unsigned int v3 = 80;
-	int v10 = 0;
-	int v12 = 16;
-	int secertPtr = 0;
-	do
+	char xcode[18];
+	for (int i = 0; i < 16; i++)
+		xcode[i] = ACFXLookup(code[i]);
+	for (int i = 0; i < 10; i++)
 	{
-		if ((unsigned __int16)v2 <= 27u)
-		{
-			int v4 = (unsigned __int16)((unsigned __int16)(27 - v2) / 5u + 1);
-			v2 += 5 * v4;
-			for (int i = 0; i < v4; i++)
-			{
-				int v5 = ((unsigned __int16)v10 & (unsigned __int16)~0xffu) | code[(unsigned __int16)v10];
-				v3 = ((unsigned __int16)sub_40A8F0(v5) << 27) | (v3 >> 5);
-				v10++;
-				v12--;
-			}
-		}
-		if ((unsigned __int16)v2 >= 8u)
-		{
-			unsigned int v7 = (unsigned int)(unsigned __int16)v2 >> 3;
-			for (int i = 0; i < v7; i++)
-			{
-				unsigned int v8 = v3 >> (32 - (unsigned __int16)v2);
-				v2 += 65528;
-				secert[(unsigned __int16)secertPtr++] = v8;
-			}
-		}
-	} while (v12);
+		int c = i * 8 / 5;
+		int d = i * 8 % 5;
+		secert[i] = (xcode[c] >> d) |
+			(xcode[c + 1] << (5 - d)) |
+			(xcode[c + 2] << (10 - d));
+	}
 }
-
 
 void ACFXGenCodeSecert(const char *code, _BYTE *secert)
 {
@@ -68,7 +48,7 @@ void ACFXGenCodeSecert(const char *code, _BYTE *secert)
 				v5 = (unsigned __int16)v10;
 				LOBYTE(v5) = code[(unsigned __int16)v10++];
 				v12 -= 5;
-				v3 = ((unsigned __int16)sub_40A8F0(v5) << 27) | (v3 >> 5);
+				v3 = ((unsigned __int16)ACFXLookup(v5) << 27) | (v3 >> 5);
 				--v4;
 			} while (v4);
 		}
@@ -89,36 +69,9 @@ void ACFXGenCodeSecert(const char *code, _BYTE *secert)
 	} while (v12);
 }
 
-int sub_40A8F0(int a1)
-{
-	char v1; // cl
-	int result; // eax
-
-	v1 = ACFCharToUpper(a1);
-	result = 0;
-	while (v1 != ACDXSecertCode0[(unsigned __int16)result])
-	{
-		if ((unsigned __int16)++result >= 0x20u)
-			return 0;
-	}
-	return result;
-}
-
-char ACFCharToUpper(char a1)
-{
-	if (ACFCharIsLower(a1))
-		a1 -= 32;
-	return a1;
-}
-
-bool ACFCharIsLower(unsigned __int8 a1)
-{
-	return a1 <= 0x7Fu && islower(a1);
-}
-
 char ACFXMatchSecertBeautify(const char *name, const _BYTE *secert)
 {
-	unsigned __int16 nameLen = strlen(name); // bp
+	int nameLen = strlen(name); // bp
 	_BYTE vResult[5];
 	vResult[0] = secert[0];
 	vResult[1] = secert[1];
@@ -220,4 +173,31 @@ char __cdecl ACFXMatchSecert(const char *name, _BYTE *secert)
 		}
 	}
 	return 0;
+}
+
+int ACFXLookup(int a1)
+{
+	char v1; // cl
+	int result; // eax
+
+	v1 = ACFCharToUpper(a1);
+	result = 0;
+	while (v1 != ACDXSecertCode0[(unsigned __int16)result])
+	{
+		if ((unsigned __int16)++result >= 0x20u)
+			return 0;
+	}
+	return result;
+}
+
+char ACFCharToUpper(char a1)
+{
+	if (ACFCharIsLower(a1))
+		a1 -= 32;
+	return a1;
+}
+
+bool ACFCharIsLower(unsigned __int8 a1)
+{
+	return a1 <= 0x7Fu && islower(a1);
 }
